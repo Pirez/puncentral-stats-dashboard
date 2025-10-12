@@ -23,8 +23,8 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install all dependencies (vite is needed for preview)
-RUN npm ci
+# Install production dependencies (serve for static hosting)
+RUN npm ci --only=production
 
 # Copy built assets from builder
 COPY --from=builder /app/dist ./dist
@@ -32,5 +32,5 @@ COPY --from=builder /app/dist ./dist
 # Expose port (Railway will set PORT env var)
 EXPOSE 3000
 
-# Start the preview server using Railway's PORT env var
-CMD sh -c "npm run preview -- --host 0.0.0.0 --port ${PORT:-3000}"
+# Use serve to host static files - more reliable than vite preview
+CMD sh -c "npx serve -s dist -l ${PORT:-3000}"
