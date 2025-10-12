@@ -32,5 +32,5 @@ COPY --from=builder /app/dist ./dist
 # Expose port (Railway will set PORT env var)
 EXPOSE 3000
 
-# Start the preview server
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
+# Start the preview server using Railway's PORT env var
+CMD sh -c "npm run preview -- --host 0.0.0.0 --port ${PORT:-3000}"
