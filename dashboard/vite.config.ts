@@ -15,6 +15,6 @@ export default defineConfig({
   },
   define: {
     // Force environment variables to be available
-    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'http://localhost:8000'),
+    'import.meta.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL || 'https://puncentral-stats-dashboard-production.up.railway.app'),
   },
 })
