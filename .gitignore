@@ -40,7 +40,8 @@ yarn-error.log*
 *.db
 *.sqlite
 *.sqlite3
-player_stats.db
+# Allow backend database for initial Railway deployment
+!backend/player_stats.db
 
 # IDE
 .vscode/
