@@ -23,7 +23,7 @@ const fireworkStyles = `
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import * as ApiTypes from '../types/api';
-import { Trophy, TrendingUp, TrendingDown, Flame, Zap, Target, Bomb, ArrowUpDown, User } from 'lucide-react';
+import { Trophy, Flame, Zap, Target, Bomb, User } from 'lucide-react';
 import { getPlayerAvatar } from '../config/playerAvatars';
 import { GifOrImg } from './GifOrImg';
 

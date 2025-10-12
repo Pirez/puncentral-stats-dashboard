@@ -38,4 +38,3 @@ export function GptSummaryPanel({ lastMatch, apiKey }: Props) {
     </div>
   );
 }
-}
