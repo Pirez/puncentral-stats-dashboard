@@ -16,7 +16,12 @@ from api_token_auth import APITokenAuthMiddleware
 
 # Initialize rate limiter (100 requests per minute per IP)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
-app = FastAPI(title="CS2 Player Stats API", version="1.0.0")
+app = FastAPI(title="CS2 Player Stats API",
+                version="1.0.0", 
+                docs_url=None,           # Disable Swagger UI
+                redoc_url=None,          # Disable ReDoc
+                openapi_url=None         # Disable OpenAPI schema
+)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
