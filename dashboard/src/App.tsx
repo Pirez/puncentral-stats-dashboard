@@ -59,6 +59,7 @@ function AppContent() {
         // Try to fetch last match data (optional)
         try {
           const lastMatchData = await apiService.getLastMatch();
+          console.log('- lastMatchData:', lastMatchData);
           setLastMatch(lastMatchData);
         } catch (lastMatchErr) {
           console.warn('Last match data not available:', lastMatchErr);
@@ -169,7 +170,7 @@ function AppContent() {
               description={`${(bestMap.win_ratio * 100).toFixed(1)}% win rate`}
             />
           )}
-          {lastMatch && (
+          {lastMatch && lastMatch.match_info && (
             <StatCard
               title="Last Match"
               value={lastMatch.match_info.won ? 'Victory' : 'Defeat'}
@@ -180,7 +181,7 @@ function AppContent() {
         </div>
 
 
-        {lastMatch && <LastMatchCard match={lastMatch} />}
+        {lastMatch && lastMatch.match_info && <LastMatchCard match={lastMatch} />}
 
 
         <div className="grid gap-6 lg:grid-cols-3 mt-6">
