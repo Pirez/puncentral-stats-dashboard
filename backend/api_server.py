@@ -11,8 +11,7 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
-from ip_geolocation import IPGeolocationMiddleware
-from api_token_auth import APITokenAuthMiddleware
+from combined_security_middleware import CombinedSecurityMiddleware
 
 # Initialize rate limiter (100 requests per minute per IP)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
@@ -35,24 +34,29 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add API token authentication middleware
-# Can be disabled via API_TOKEN_ENABLED=false env var
-# If enabled, requires API_TOKEN environment variable to be set
+# Add combined security middleware (token auth + geolocation)
+# Configuration via environment variables:
+#   API_TOKEN_ENABLED=true|false (default: true)
+#   API_TOKEN=<your-secure-token> (required if API_TOKEN_ENABLED=true)
+#   GEOLOCATION_ENABLED=true|false (default: true)
+#   ALLOWED_COUNTRIES=NO,SE,DK (default: NO)
+#   GEO_CACHE_TTL=3600 (default: 3600 seconds)
+#
+# This replaces the previous separate API token and geolocation middlewares
+# with a single, unified security layer for better robustness and maintainability
 token_auth_enabled = os.getenv("API_TOKEN_ENABLED", "true").lower() == "true"
-if token_auth_enabled:
-    app.add_middleware(
-        APITokenAuthMiddleware,
-        enabled=token_auth_enabled
-    )
-
-# Add IP geolocation verification middleware
-# Can be disabled via GEOLOCATION_ENABLED=false env var
 geolocation_enabled = os.getenv("GEOLOCATION_ENABLED", "true").lower() == "true"
+api_token = os.getenv("API_TOKEN") if token_auth_enabled else None
+allowed_countries = os.getenv("ALLOWED_COUNTRIES", "NO").split(",")
+cache_ttl = int(os.getenv("GEO_CACHE_TTL", "3600"))
+
 app.add_middleware(
-    IPGeolocationMiddleware,
-    cache_ttl=3600,  # Cache IP lookups for 1 hour
-    enabled=geolocation_enabled,
-    allowed_countries=["NO"]  # Only allow Norwegian IPs
+    CombinedSecurityMiddleware,
+    token_auth_enabled=token_auth_enabled,
+    api_token=api_token,
+    geolocation_enabled=geolocation_enabled,
+    allowed_countries=allowed_countries,
+    cache_ttl=cache_ttl,
 )
 
 # Database path - use Railway volume for persistence

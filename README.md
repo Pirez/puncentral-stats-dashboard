@@ -24,10 +24,12 @@ A modern, full-stack web application for tracking and visualizing Counter-Strike
 ### 🚀 Backend API
 - **FastAPI** RESTful API with automatic documentation
 - **SQLite Database** with Railway persistent volumes
-- **API Token Authentication** with Bearer token support
+- **Combined Security Middleware** - Unified security layer with:
+  - API Token Authentication (Bearer tokens)
+  - IP Geolocation verification (Norwegian IPs only)
+  - Smart caching for geolocation lookups
+  - Configurable security policies
 - **Rate Limiting** (100 req/min per IP)
-- **IP Geolocation** verification (Norwegian IPs only)
-- **Smart Caching** for geolocation lookups
 - **CORS Configuration** for cross-origin requests
 - **Health Checks** for monitoring
 - **Comprehensive Endpoints** for all stats
@@ -230,11 +232,12 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for more troubleshooting.
 
 ## 🔐 Security
 
+- ✅ **Combined Security Middleware** - Unified, robust security layer
 - ✅ API token authentication with Bearer tokens
 - ✅ Timing attack protection (constant-time comparison)
-- ✅ Rate limiting on frontend and backend
 - ✅ IP geolocation verification (Norwegian IPs only)
 - ✅ Smart caching to prevent API abuse
+- ✅ Rate limiting on frontend and backend
 - ✅ CORS configuration
 - ✅ Environment variable protection
 - ✅ Optional authentication
@@ -244,8 +247,9 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for more troubleshooting.
 ## 📚 Documentation
 
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Full deployment instructions
-- [backend/API_TOKEN_AUTH_README.md](./backend/API_TOKEN_AUTH_README.md) - API token authentication
-- [backend/IP_GEOLOCATION_README.md](./backend/IP_GEOLOCATION_README.md) - IP geolocation feature
+- [backend/COMBINED_SECURITY_README.md](./backend/COMBINED_SECURITY_README.md) - **Combined security middleware** (recommended)
+- [backend/API_TOKEN_AUTH_README.md](./backend/API_TOKEN_AUTH_README.md) - API token authentication (legacy)
+- [backend/IP_GEOLOCATION_README.md](./backend/IP_GEOLOCATION_README.md) - IP geolocation feature (legacy)
 - [backend/DEPLOYMENT.md](./backend/DEPLOYMENT.md) - Backend-specific deployment
 - [dashboard/RAILWAY_DEPLOYMENT.md](./dashboard/RAILWAY_DEPLOYMENT.md) - Dashboard deployment
 - [backend/PERSISTENT_STORAGE.md](./backend/PERSISTENT_STORAGE.md) - Database persistence
