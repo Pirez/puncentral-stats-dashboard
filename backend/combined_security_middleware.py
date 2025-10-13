@@ -120,9 +120,10 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
 
         Order of operations:
         1. Check if path is exempt
-        2. Verify API token (if enabled)
-        3. Verify IP geolocation (if enabled)
-        4. Proceed to next middleware/handler
+        2. Allow OPTIONS requests (CORS preflight) without authentication
+        3. Verify API token (if enabled)
+        4. Verify IP geolocation (if enabled)
+        5. Proceed to next middleware/handler
 
         Args:
             request: Incoming request
@@ -133,6 +134,10 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
         """
         # Skip all security checks for exempt paths
         if request.url.path in self.exempt_paths:
+            return await call_next(request)
+
+        # Allow OPTIONS requests (CORS preflight) without authentication
+        if request.method == "OPTIONS":
             return await call_next(request)
 
         # 1. API Token Authentication
