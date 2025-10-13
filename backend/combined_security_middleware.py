@@ -273,8 +273,16 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
         return request.client.host if request.client else "127.0.0.1"
 
     def _is_local_ip(self, ip: str) -> bool:
-        """Check if IP is localhost or private network"""
-        local_patterns = ["127.", "localhost", "::1", "192.168.", "10.", "172."]
+        """Check if IP is localhost, private network, or Railway internal"""
+        local_patterns = [
+            "127.",           # Localhost
+            "localhost",      # Localhost
+            "::1",            # IPv6 localhost
+            "192.168.",       # Private network
+            "10.",            # Private network
+            "172.",           # Private network (172.16.0.0 - 172.31.255.255)
+            "railway.internal",  # Railway internal network
+        ]
         return any(ip.startswith(pattern) for pattern in local_patterns)
 
     async def _lookup_country(self, ip: str) -> Optional[str]:
