@@ -2,6 +2,7 @@ import axios from 'axios';
 import * as ApiTypes from '../types/api';
 import { rateLimiter } from '../utils/rateLimiter';
 
+// API configuration from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
