@@ -6,6 +6,15 @@ import { rateLimiter } from '../utils/rateLimiter';
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
+// Debug: Log token status (only shows if token exists, not the token itself)
+console.log('API Configuration:');
+console.log('- Base URL:', API_BASE_URL);
+console.log('- Token configured:', API_TOKEN ? 'YES' : 'NO');
+if (API_TOKEN) {
+  console.log('- Token length:', API_TOKEN.length);
+  console.log('- Token preview:', API_TOKEN.substring(0, 10) + '...');
+}
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -13,6 +22,44 @@ const api = axios.create({
     'Authorization': `Bearer ${API_TOKEN}`
   } : {}
 });
+
+// Debug: Log request details
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method,
+      baseURL: config.baseURL,
+      hasAuthHeader: !!config.headers.Authorization,
+    });
+    return config;
+  },
+  (error) => {
+    console.error('Request error:', error);
+    return Promise.reject(error);
+  }
+);
+
+// Debug: Log response details
+api.interceptors.response.use(
+  (response) => {
+    console.log('API Response:', {
+      url: response.config.url,
+      status: response.status,
+      dataType: Array.isArray(response.data) ? `Array[${response.data.length}]` : typeof response.data,
+    });
+    return response;
+  },
+  (error) => {
+    console.error('API Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+    });
+    return Promise.reject(error);
+  }
+);
 
 // Helper function to wrap API calls with rate limiting
 async function withRateLimit<T>(
