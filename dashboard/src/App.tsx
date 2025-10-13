@@ -100,14 +100,14 @@ function AppContent() {
     );
   }
 
-  const totalMatches = mapStats.length;
-  const totalWins = mapStats.filter((m) => m.won === 1).length;
+  const totalMatches = mapStats?.length || 0;
+  const totalWins = mapStats?.filter((m) => m.won === 1).length || 0;
   const winRate = totalMatches > 0 ? (totalWins / totalMatches) * 100 : 0;
 
-  const topPlayer = kdRatios.length > 0 ? kdRatios[0] : null;
+  const topPlayer = kdRatios?.length > 0 ? kdRatios[0] : null;
 
   // Find the best map (highest win ratio)
-  const bestMap = mapWinRates.length > 0
+  const bestMap = mapWinRates?.length > 0
     ? mapWinRates.reduce((best, current) =>
         current.win_ratio > best.win_ratio ? current : best
       )
