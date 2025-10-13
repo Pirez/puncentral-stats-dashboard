@@ -43,12 +43,6 @@ function AppContent() {
             apiService.getUtilityDamage(),
           ]);
 
-        // Debug: Log what we received
-        console.log('API Response Types:');
-        console.log('- kdRatiosData:', Array.isArray(kdRatiosData) ? `Array[${kdRatiosData.length}]` : typeof kdRatiosData);
-        console.log('- mapStatsData:', Array.isArray(mapStatsData) ? `Array[${mapStatsData.length}]` : typeof mapStatsData, mapStatsData);
-        console.log('- mapWinRatesData:', Array.isArray(mapWinRatesData) ? `Array[${mapWinRatesData.length}]` : typeof mapWinRatesData);
-
         setKdRatios(kdRatiosData);
         setKdOverTime(kdOverTimeData);
         setMapWinRates(mapWinRatesData);
@@ -59,10 +53,9 @@ function AppContent() {
         // Try to fetch last match data (optional)
         try {
           const lastMatchData = await apiService.getLastMatch();
-          console.log('- lastMatchData:', lastMatchData);
           setLastMatch(lastMatchData);
         } catch (lastMatchErr) {
-          console.warn('Last match data not available:', lastMatchErr);
+          // Last match data is optional, silently fail
           setLastMatch(null);
         }
       } catch (err) {
