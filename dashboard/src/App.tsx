@@ -43,6 +43,12 @@ function AppContent() {
             apiService.getUtilityDamage(),
           ]);
 
+        // Debug: Log what we received
+        console.log('API Response Types:');
+        console.log('- kdRatiosData:', Array.isArray(kdRatiosData) ? `Array[${kdRatiosData.length}]` : typeof kdRatiosData);
+        console.log('- mapStatsData:', Array.isArray(mapStatsData) ? `Array[${mapStatsData.length}]` : typeof mapStatsData, mapStatsData);
+        console.log('- mapWinRatesData:', Array.isArray(mapWinRatesData) ? `Array[${mapWinRatesData.length}]` : typeof mapWinRatesData);
+
         setKdRatios(kdRatiosData);
         setKdOverTime(kdOverTimeData);
         setMapWinRates(mapWinRatesData);
@@ -100,15 +106,20 @@ function AppContent() {
     );
   }
 
-  const totalMatches = mapStats?.length || 0;
-  const totalWins = mapStats?.filter((m) => m.won === 1).length || 0;
+  // Ensure arrays are actually arrays (defensive programming)
+  const safeMapStats = Array.isArray(mapStats) ? mapStats : [];
+  const safeKdRatios = Array.isArray(kdRatios) ? kdRatios : [];
+  const safeMapWinRates = Array.isArray(mapWinRates) ? mapWinRates : [];
+
+  const totalMatches = safeMapStats.length;
+  const totalWins = safeMapStats.filter((m) => m.won === 1).length;
   const winRate = totalMatches > 0 ? (totalWins / totalMatches) * 100 : 0;
 
-  const topPlayer = kdRatios?.length > 0 ? kdRatios[0] : null;
+  const topPlayer = safeKdRatios.length > 0 ? safeKdRatios[0] : null;
 
   // Find the best map (highest win ratio)
-  const bestMap = mapWinRates?.length > 0
-    ? mapWinRates.reduce((best, current) =>
+  const bestMap = safeMapWinRates.length > 0
+    ? safeMapWinRates.reduce((best, current) =>
         current.win_ratio > best.win_ratio ? current : best
       )
     : null;
@@ -174,13 +185,17 @@ function AppContent() {
 
         <div className="grid gap-6 lg:grid-cols-3 mt-6">
           <div className="lg:col-span-2">
-            <Leaderboard players={kdRatios} multiKills={multiKills} utilityDamage={utilityDamage} />
+            <Leaderboard
+              players={safeKdRatios}
+              multiKills={Array.isArray(multiKills) ? multiKills : []}
+              utilityDamage={Array.isArray(utilityDamage) ? utilityDamage : []}
+            />
           </div>
-          <MapWinRates data={mapWinRates} />
+          <MapWinRates data={safeMapWinRates} />
         </div>
 
         <div className="mt-6">
-          <KDChart data={kdOverTime} />
+          <KDChart data={Array.isArray(kdOverTime) ? kdOverTime : []} />
         </div>
       </div>
     </div>
