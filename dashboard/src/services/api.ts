@@ -3,10 +3,14 @@ import * as ApiTypes from '../types/api';
 import { rateLimiter } from '../utils/rateLimiter';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_TOKEN = import.meta.env.VITE_API_TOKEN;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
+  headers: API_TOKEN ? {
+    'Authorization': `Bearer ${API_TOKEN}`
+  } : {}
 });
 
 // Helper function to wrap API calls with rate limiting

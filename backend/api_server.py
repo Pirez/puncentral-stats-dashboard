@@ -11,6 +11,9 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
+from ip_geolocation import IPGeolocationMiddleware
+from api_token_auth import APITokenAuthMiddleware
+
 # Initialize rate limiter (100 requests per minute per IP)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
 app = FastAPI(title="CS2 Player Stats API", version="1.0.0")
@@ -25,6 +28,26 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
+)
+
+# Add API token authentication middleware
+# Can be disabled via API_TOKEN_ENABLED=false env var
+# If enabled, requires API_TOKEN environment variable to be set
+token_auth_enabled = os.getenv("API_TOKEN_ENABLED", "true").lower() == "true"
+if token_auth_enabled:
+    app.add_middleware(
+        APITokenAuthMiddleware,
+        enabled=token_auth_enabled
+    )
+
+# Add IP geolocation verification middleware
+# Can be disabled via GEOLOCATION_ENABLED=false env var
+geolocation_enabled = os.getenv("GEOLOCATION_ENABLED", "true").lower() == "true"
+app.add_middleware(
+    IPGeolocationMiddleware,
+    cache_ttl=3600,  # Cache IP lookups for 1 hour
+    enabled=geolocation_enabled,
+    allowed_countries=["NO"]  # Only allow Norwegian IPs
 )
 
 # Database path - use Railway volume for persistence

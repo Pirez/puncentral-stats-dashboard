@@ -24,7 +24,10 @@ A modern, full-stack web application for tracking and visualizing Counter-Strike
 ### 🚀 Backend API
 - **FastAPI** RESTful API with automatic documentation
 - **SQLite Database** with Railway persistent volumes
+- **API Token Authentication** with Bearer token support
 - **Rate Limiting** (100 req/min per IP)
+- **IP Geolocation** verification (Norwegian IPs only)
+- **Smart Caching** for geolocation lookups
 - **CORS Configuration** for cross-origin requests
 - **Health Checks** for monitoring
 - **Comprehensive Endpoints** for all stats
@@ -174,13 +177,17 @@ Optional password protection with AuthGate component.
 
 #### Backend (`.env` or Railway Variables)
 ```bash
+API_TOKEN=your-secure-token-here  # Generate with: python -c 'import secrets; print(secrets.token_urlsafe(32))'
+API_TOKEN_ENABLED=true  # Enable API token authentication
 ALLOWED_ORIGINS=https://your-dashboard.railway.app,http://localhost:5173
+GEOLOCATION_ENABLED=true  # Enable IP geolocation verification
 PORT=8000  # Auto-set by Railway
 ```
 
 #### Dashboard (`.env`)
 ```bash
 VITE_API_URL=https://your-backend.railway.app
+VITE_API_TOKEN=your-secure-token-here  # Must match backend API_TOKEN
 VITE_AUTH_PASSWORD=your-password  # Optional
 ```
 
@@ -223,7 +230,11 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for more troubleshooting.
 
 ## 🔐 Security
 
+- ✅ API token authentication with Bearer tokens
+- ✅ Timing attack protection (constant-time comparison)
 - ✅ Rate limiting on frontend and backend
+- ✅ IP geolocation verification (Norwegian IPs only)
+- ✅ Smart caching to prevent API abuse
 - ✅ CORS configuration
 - ✅ Environment variable protection
 - ✅ Optional authentication
@@ -233,6 +244,8 @@ See [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) for more troubleshooting.
 ## 📚 Documentation
 
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Full deployment instructions
+- [backend/API_TOKEN_AUTH_README.md](./backend/API_TOKEN_AUTH_README.md) - API token authentication
+- [backend/IP_GEOLOCATION_README.md](./backend/IP_GEOLOCATION_README.md) - IP geolocation feature
 - [backend/DEPLOYMENT.md](./backend/DEPLOYMENT.md) - Backend-specific deployment
 - [dashboard/RAILWAY_DEPLOYMENT.md](./dashboard/RAILWAY_DEPLOYMENT.md) - Dashboard deployment
 - [backend/PERSISTENT_STORAGE.md](./backend/PERSISTENT_STORAGE.md) - Database persistence

@@ -3,3 +3,4 @@ uvicorn[standard]==0.24.0
 pandas==2.1.3
 pydantic==2.5.0
 slowapi==0.1.9
+httpx==0.25.1
