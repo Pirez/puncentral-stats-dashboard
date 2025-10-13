@@ -70,6 +70,8 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
         cache_ttl: int = 3600,
         # Common settings
         exempt_paths: List[str] = None,
+        # CORS settings
+        cors_origins: List[str] = None,
     ):
         """
         Initialize the combined security middleware
@@ -109,6 +111,9 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
             "/redoc",
         ]
 
+        # CORS origins for error responses
+        self.cors_origins = cors_origins or ["*"]
+
     async def dispatch(self, request: Request, call_next) -> Response:
         """
         Process each request through security checks
@@ -135,13 +140,8 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
             try:
                 await self._verify_token(request)
             except HTTPException as e:
-                # Return proper JSON error response
-                from starlette.responses import JSONResponse
-                return JSONResponse(
-                    status_code=e.status_code,
-                    content={"detail": e.detail},
-                    headers=e.headers or {},
-                )
+                # Return proper JSON error response with CORS headers
+                return self._create_error_response(e, request)
 
         # 2. IP Geolocation Verification
         if self.geolocation_enabled:
@@ -152,14 +152,45 @@ class CombinedSecurityMiddleware(BaseHTTPMiddleware):
                 try:
                     await self._verify_geolocation(client_ip)
                 except HTTPException as e:
-                    from starlette.responses import JSONResponse
-                    return JSONResponse(
-                        status_code=e.status_code,
-                        content={"detail": e.detail},
-                    )
+                    return self._create_error_response(e, request)
 
         # All security checks passed
         return await call_next(request)
+
+    def _create_error_response(self, exception: HTTPException, request: Request):
+        """
+        Create error response with CORS headers
+
+        Args:
+            exception: HTTPException to convert to response
+            request: Original request (for CORS origin check)
+
+        Returns:
+            JSONResponse with CORS headers
+        """
+        from starlette.responses import JSONResponse
+
+        # Get origin from request
+        origin = request.headers.get("origin")
+
+        # Build CORS headers
+        cors_headers = {}
+        if origin:
+            # Check if origin is allowed
+            if "*" in self.cors_origins or origin in self.cors_origins:
+                cors_headers["Access-Control-Allow-Origin"] = origin
+                cors_headers["Access-Control-Allow-Credentials"] = "true"
+                cors_headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+                cors_headers["Access-Control-Allow-Headers"] = "*"
+
+        # Merge with exception headers
+        response_headers = {**cors_headers, **(exception.headers or {})}
+
+        return JSONResponse(
+            status_code=exception.status_code,
+            content={"detail": exception.detail},
+            headers=response_headers,
+        )
 
     async def _verify_token(self, request: Request):
         """

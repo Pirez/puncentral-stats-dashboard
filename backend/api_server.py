@@ -57,6 +57,7 @@ app.add_middleware(
     geolocation_enabled=geolocation_enabled,
     allowed_countries=allowed_countries,
     cache_ttl=cache_ttl,
+    cors_origins=allowed_origins,  # Pass CORS origins for error responses
 )
 
 # Database path - use Railway volume for persistence
