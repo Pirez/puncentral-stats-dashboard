@@ -39,7 +39,7 @@ app.add_middleware(
 #   API_TOKEN_ENABLED=true|false (default: true)
 #   API_TOKEN=<your-secure-token> (required if API_TOKEN_ENABLED=true)
 #   GEOLOCATION_ENABLED=true|false (default: true)
-#   ALLOWED_COUNTRIES=NO,SE,DK (default: NO)
+#   ALLOWED_COUNTRIES=NO,SE,DK (default: NO,NL)
 #   GEO_CACHE_TTL=3600 (default: 3600 seconds)
 #
 # This replaces the previous separate API token and geolocation middlewares
@@ -47,7 +47,7 @@ app.add_middleware(
 token_auth_enabled = os.getenv("API_TOKEN_ENABLED", "true").lower() == "true"
 geolocation_enabled = os.getenv("GEOLOCATION_ENABLED", "true").lower() == "true"
 api_token = os.getenv("API_TOKEN") if token_auth_enabled else None
-allowed_countries = os.getenv("ALLOWED_COUNTRIES", "NO").split(",")
+allowed_countries = os.getenv("ALLOWED_COUNTRIES", "NO,NL").split(",")
 cache_ttl = int(os.getenv("GEO_CACHE_TTL", "3600"))
 
 app.add_middleware(
