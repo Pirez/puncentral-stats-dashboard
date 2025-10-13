@@ -74,7 +74,7 @@ function AppContent() {
         <div style={{ textAlign: 'center' }}>
           <div style={{ border: '4px solid #3b82f6', borderTop: '4px solid transparent', borderRadius: '50%', width: '48px', height: '48px', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
           <p>Loading stats from API...</p>
-          <p style={{ fontSize: '12px', marginTop: '8px', color: '#94a3b8' }}>API URL: {import.meta.env.VITE_API_URL || 'http://localhost:8000'}</p>
+          <p style={{ fontSize: '12px', marginTop: '8px', color: '#94a3b8' }}></p>
         </div>
       </div>
     );
