@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import * as ApiTypes from '../types/api';
 import { Clock, Trophy, Skull, Target } from 'lucide-react';
+import { formatLocalDateTime } from '../lib/utils';
 
 interface LastMatchCardProps {
   match: ApiTypes.LastMatch;
@@ -19,7 +20,7 @@ export const LastMatchCard = ({ match }: LastMatchCardProps) => {
           </CardTitle>
           <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">
-              {new Date(match_info.date_time).toLocaleString()}
+              {formatLocalDateTime(match_info.date_time)}
             </span>
             <span className="text-sm font-medium">{match_info.map_name.replace('de_', '')}</span>
             <span
