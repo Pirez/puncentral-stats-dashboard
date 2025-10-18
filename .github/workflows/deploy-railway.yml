@@ -28,3 +28,9 @@ jobs:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         working-directory: ./backend
         run: railway up --service acae07fe-5efa-49f4-8ee4-5ddf39e28e7a
+
+      - name: Deploy Processing to Railway
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ./processing
+        run: railway up --service ${{ secrets.RAILWAY_PROCESSING_SERVICE_ID }}
