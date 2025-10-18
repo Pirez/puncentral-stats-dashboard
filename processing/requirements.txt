@@ -1,0 +1,7 @@
+requests
+python-dotenv
+beautifulsoup4
+loguru
+playwright
+demoparser2==0.39.0
+pandas
