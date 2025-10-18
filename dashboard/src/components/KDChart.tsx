@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as ApiTypes from '../types/api';
 import { TrendingUp } from 'lucide-react';
+import { utcToLocal, formatChartDateTime } from '../lib/utils';
 
 interface KDChartProps {
   data: ApiTypes.KDOverTime[];
@@ -61,8 +62,7 @@ export const KDChart = ({ data }: KDChartProps) => {
   data.forEach((curr) => {
     const key = `${curr.match_id}`;
     if (!matchGroups.has(key)) {
-      const date = new Date(curr.date_time);
-      const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      const formattedDate = formatChartDateTime(curr.date_time);
       matchGroups.set(key, {
         match_id: curr.match_id,
         date_time: formattedDate,
@@ -73,9 +73,9 @@ export const KDChart = ({ data }: KDChartProps) => {
     matchGroups.get(key)[curr.name] = curr.match_kd;
   });
 
-  // Convert to array and sort by date
+  // Convert to array and sort by date (using UTC conversion for proper sorting)
   const transformedData = Array.from(matchGroups.values()).sort(
-    (a, b) => new Date(a.full_date).getTime() - new Date(b.full_date).getTime()
+    (a, b) => utcToLocal(a.full_date).getTime() - utcToLocal(b.full_date).getTime()
   );
 
   // Handle legend click to toggle player visibility
