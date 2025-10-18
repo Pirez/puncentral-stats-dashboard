@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import datetime
 from typing import List, Optional
 
@@ -12,6 +13,13 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from combined_security_middleware import CombinedSecurityMiddleware
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Initialize rate limiter (100 requests per minute per IP)
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
@@ -194,16 +202,18 @@ def ensure_database_exists():
 
     # Create volume directory if it doesn't exist
     os.makedirs(VOLUME_PATH, exist_ok=True)
+    logger.info(f"Volume path: {VOLUME_PATH}")
+    logger.info(f"Database path: {DB_PATH}")
 
     # If database doesn't exist in volume, copy from initial location or create new
     if not os.path.exists(DB_PATH):
         initial_db_path = "./player_stats.db"  # Initial DB in deployment
         if os.path.exists(initial_db_path):
             shutil.copy2(initial_db_path, DB_PATH)
-            print(f"Copied initial database to persistent volume: {DB_PATH}")
+            logger.info(f"Copied initial database to persistent volume: {DB_PATH}")
         else:
             # Create empty database with schema
-            print(f"Creating new empty database at {DB_PATH}")
+            logger.info(f"Creating new empty database at {DB_PATH}")
             conn = sqlite3.connect(DB_PATH)
             cursor = conn.cursor()
 
@@ -270,7 +280,9 @@ def ensure_database_exists():
 
             conn.commit()
             conn.close()
-            print(f"Successfully created empty database with schema at {DB_PATH}")
+            logger.info(f"Successfully created empty database with schema at {DB_PATH}")
+    else:
+        logger.info(f"Database already exists at {DB_PATH}")
 
 
 def get_db():
@@ -314,16 +326,23 @@ async def upload_match_data(request: Request, match_data: MatchUpload):
     - player_stats: List of player statistics
     - map_stats: Map information and outcome
     """
+    logger.info(f"Received upload request for match_id: {match_data.match_id}")
+    logger.info(f"Number of players: {len(match_data.player_stats)}")
+    logger.info(f"Map: {match_data.map_stats.map_name}, Won: {match_data.map_stats.won}")
+
     try:
+        logger.info("Getting database connection...")
         conn = get_db()
         cursor = conn.cursor()
 
         # Check if match already exists
+        logger.info(f"Checking if match {match_data.match_id} already exists...")
         cursor.execute(
             "SELECT COUNT(*) FROM map_stats WHERE match_id = ?",
             (match_data.match_id,)
         )
         if cursor.fetchone()[0] > 0:
+            logger.warning(f"Match {match_data.match_id} already exists in database")
             conn.close()
             raise HTTPException(
                 status_code=409,
@@ -331,6 +350,7 @@ async def upload_match_data(request: Request, match_data: MatchUpload):
             )
 
         # Insert map stats
+        logger.info(f"Inserting map stats for match {match_data.match_id}...")
         cursor.execute("""
             INSERT INTO map_stats (match_id, map_name, date_time, won)
             VALUES (?, ?, ?, ?)
@@ -340,9 +360,12 @@ async def upload_match_data(request: Request, match_data: MatchUpload):
             match_data.map_stats.date_time,
             match_data.map_stats.won
         ))
+        logger.info("Map stats inserted successfully")
 
         # Insert player stats
-        for player in match_data.player_stats:
+        logger.info(f"Inserting player stats for {len(match_data.player_stats)} players...")
+        for i, player in enumerate(match_data.player_stats):
+            logger.debug(f"Inserting player {i+1}/{len(match_data.player_stats)}: {player.name}")
             cursor.execute("""
                 INSERT INTO player_stats (
                     match_id, kills_total, deaths_total, dmg, utility_dmg,
@@ -363,9 +386,12 @@ async def upload_match_data(request: Request, match_data: MatchUpload):
                 player.mvps,
                 player.name
             ))
+        logger.info("All player stats inserted successfully")
 
+        logger.info("Committing transaction...")
         conn.commit()
         conn.close()
+        logger.info(f"Match {match_data.match_id} uploaded successfully")
 
         return {
             "status": "success",
@@ -376,6 +402,7 @@ async def upload_match_data(request: Request, match_data: MatchUpload):
     except HTTPException:
         raise
     except Exception as e:
+        logger.error(f"Error uploading match data: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error uploading match data: {str(e)}")
 
 
@@ -730,4 +757,7 @@ async def get_last_match():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.getenv("PORT", 8000))
+    logger.info(f"Starting CS2 Player Stats API on port {port}")
+    logger.info(f"API Token Auth: {'enabled' if token_auth_enabled else 'disabled'}")
+    logger.info(f"Geolocation: {'enabled' if geolocation_enabled else 'disabled'}")
     uvicorn.run(app, host="0.0.0.0", port=port)
