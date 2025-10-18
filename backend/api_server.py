@@ -189,20 +189,88 @@ class MatchUpload(BaseModel):
 
 
 def ensure_database_exists():
-    """Ensure database directory exists and copy initial database if needed"""
+    """Ensure database directory exists and create empty database with schema if needed"""
     import shutil
-    
+
     # Create volume directory if it doesn't exist
     os.makedirs(VOLUME_PATH, exist_ok=True)
-    
-    # If database doesn't exist in volume, copy from initial location
+
+    # If database doesn't exist in volume, copy from initial location or create new
     if not os.path.exists(DB_PATH):
         initial_db_path = "./player_stats.db"  # Initial DB in deployment
         if os.path.exists(initial_db_path):
             shutil.copy2(initial_db_path, DB_PATH)
             print(f"Copied initial database to persistent volume: {DB_PATH}")
         else:
-            print(f"No initial database found at {initial_db_path}")
+            # Create empty database with schema
+            print(f"Creating new empty database at {DB_PATH}")
+            conn = sqlite3.connect(DB_PATH)
+            cursor = conn.cursor()
+
+            # Create all required tables
+            cursor.execute("""
+                CREATE TABLE player_stats (
+                    match_id TEXT,
+                    kills_total INTEGER,
+                    deaths_total INTEGER,
+                    dmg INTEGER,
+                    utility_dmg INTEGER,
+                    headshot_kills_total INTEGER,
+                    ace_rounds_total INTEGER,
+                    quad_rounds_total INTEGER,
+                    triple_rounds_total INTEGER,
+                    mvps INTEGER,
+                    name TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE map_stats (
+                    match_id TEXT UNIQUE,
+                    map_name TEXT,
+                    date_time DATETIME,
+                    won INT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE chicken_kills (
+                    match_id TEXT,
+                    name TEXT,
+                    chicken INT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE locations (
+                    match_id TEXT,
+                    name TEXT,
+                    location TEXT,
+                    kills INT,
+                    deaths INT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            cursor.execute("""
+                CREATE TABLE rank (
+                    match_id TEXT,
+                    num_wins INTEGER,
+                    rank_change REAL,
+                    rank_new INTEGER,
+                    rank_old INTEGER,
+                    rank_type_id INTEGER,
+                    user_name TEXT,
+                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+
+            conn.commit()
+            conn.close()
+            print(f"Successfully created empty database with schema at {DB_PATH}")
 
 
 def get_db():
