@@ -187,16 +187,16 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
   return (
     <Card className="col-span-full">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:justify-between gap-4">
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-6 w-6 text-yellow-500" />
             Player Leaderboard
           </CardTitle>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">Sort by:</span>
+          <div className="flex items-center gap-2 overflow-x-auto pb-2" role="group" aria-label="Sort leaderboard by category">
+            <span className="text-sm text-muted-foreground whitespace-nowrap">Sort by:</span>
             <button
               onClick={() => setSortBy('totalPoints')}
-              className={`text-sm px-3 py-1 rounded transition-colors ${
+              className={`text-sm px-3 py-1 rounded transition-colors whitespace-nowrap ${
                 sortBy === 'totalPoints'
                   ? 'bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground'
                   : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300 dark:bg-muted dark:text-foreground dark:hover:bg-muted/80 dark:border-border'
@@ -206,7 +206,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
             </button>
             <button
               onClick={() => setSortBy('avg_kd')}
-              className={`text-sm px-3 py-1 rounded transition-colors ${
+              className={`text-sm px-3 py-1 rounded transition-colors whitespace-nowrap ${
                 sortBy === 'avg_kd'
                   ? 'bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground'
                   : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300 dark:bg-muted dark:text-foreground dark:hover:bg-muted/80 dark:border-border'
@@ -216,7 +216,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
             </button>
             <button
               onClick={() => setSortBy('total_aces')}
-              className={`text-sm px-3 py-1 rounded transition-colors ${
+              className={`text-sm px-3 py-1 rounded transition-colors whitespace-nowrap ${
                 sortBy === 'total_aces'
                   ? 'bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground'
                   : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300 dark:bg-muted dark:text-foreground dark:hover:bg-muted/80 dark:border-border'
@@ -226,7 +226,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
             </button>
             <button
               onClick={() => setSortBy('total_quads')}
-              className={`text-sm px-3 py-1 rounded transition-colors ${
+              className={`text-sm px-3 py-1 rounded transition-colors whitespace-nowrap ${
                 sortBy === 'total_quads'
                   ? 'bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground'
                   : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300 dark:bg-muted dark:text-foreground dark:hover:bg-muted/80 dark:border-border'
@@ -236,7 +236,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
             </button>
             <button
               onClick={() => setSortBy('total_triples')}
-              className={`text-sm px-3 py-1 rounded transition-colors ${
+              className={`text-sm px-3 py-1 rounded transition-colors whitespace-nowrap ${
                 sortBy === 'total_triples'
                   ? 'bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground'
                   : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300 dark:bg-muted dark:text-foreground dark:hover:bg-muted/80 dark:border-border'
@@ -246,7 +246,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
             </button>
             <button
               onClick={() => setSortBy('total_utility_dmg')}
-              className={`text-sm px-3 py-1 rounded transition-colors ${
+              className={`text-sm px-3 py-1 rounded transition-colors whitespace-nowrap ${
                 sortBy === 'total_utility_dmg'
                   ? 'bg-primary text-primary-foreground dark:bg-primary dark:text-primary-foreground'
                   : 'bg-white text-gray-900 hover:bg-gray-100 border border-gray-300 dark:bg-muted dark:text-foreground dark:hover:bg-muted/80 dark:border-border'
@@ -258,7 +258,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-x-auto">
           {/* Find the player with the most aces */}
           {(() => {
             const maxAces = Math.max(...sortedPlayers.map(p => p.total_aces));
@@ -267,9 +267,9 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
               return (
                 <div
                   key={player.name}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors min-w-[500px] md:min-w-[700px]"
                 >
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-shrink-0">
                     <div className="flex items-center justify-center w-8">
                       {getRankIcon(index)}
                     </div>
@@ -316,8 +316,8 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6 flex-shrink-0">
+                    <div className="flex items-center gap-4 flex-shrink-0">
                       <div className="text-center">
                         <div className="flex items-center gap-1 justify-center">
                           <Flame className="h-4 w-4 text-red-500" />
