@@ -2,8 +2,16 @@ import { useEffect, useState } from 'react';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState(() => {
-    if (typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
+    // Check localStorage first
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme-preference');
+      if (savedTheme === 'dark' || savedTheme === 'light') {
+        return savedTheme;
+      }
+      // Fall back to system preference
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
     }
     return 'light';
   });
@@ -13,6 +21,10 @@ export function ThemeToggle() {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
+    }
+    // Save theme preference to localStorage
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('theme-preference', theme);
     }
   }, [theme]);
 
