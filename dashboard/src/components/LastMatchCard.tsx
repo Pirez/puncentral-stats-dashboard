@@ -14,11 +14,14 @@ export const LastMatchCard = ({ match: initialMatch }: LastMatchCardProps) => {
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
   const [currentMatch, setCurrentMatch] = useState<ApiTypes.LastMatch>(initialMatch);
   const [loadingMatch, setLoadingMatch] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [matchDataCache, setMatchDataCache] = useState<Map<string, ApiTypes.LastMatch>>(new Map());
 
   // Fetch all matches for the dropdown
   useEffect(() => {
     const fetchMatches = async () => {
       try {
+        setError(null);
         const matches = await apiService.getMapStats();
         // Sort by date descending (most recent first)
         const sortedMatches = matches.sort((a, b) =>
@@ -31,6 +34,7 @@ export const LastMatchCard = ({ match: initialMatch }: LastMatchCardProps) => {
         }
       } catch (error) {
         console.error('Failed to fetch matches:', error);
+        setError('Failed to load match history. Please try again later.');
       }
     };
     fetchMatches();
@@ -38,31 +42,45 @@ export const LastMatchCard = ({ match: initialMatch }: LastMatchCardProps) => {
 
   // Fetch specific match data when selection changes
   useEffect(() => {
-    // Get initial match ID from players
-    const initialMatchId = initialMatch.players.length > 0 ? initialMatch.players[0].match_id : '';
+    // Get initial match ID more safely
+    const initialMatchId = initialMatch.match_info?.date_time
+      ? (initialMatch.players[0]?.match_id || '')
+      : '';
 
     if (!selectedMatchId || selectedMatchId === initialMatchId) {
       setCurrentMatch(initialMatch);
+      // Cache the initial match
+      if (initialMatchId) {
+        setMatchDataCache(prev => new Map(prev).set(initialMatchId, initialMatch));
+      }
+      return;
+    }
+
+    // Check cache first
+    const cachedMatch = matchDataCache.get(selectedMatchId);
+    if (cachedMatch) {
+      setCurrentMatch(cachedMatch);
       return;
     }
 
     const fetchMatchData = async () => {
       setLoadingMatch(true);
+      setError(null);
       try {
         const playerStats = await apiService.getPlayerStats();
         const matchPlayers = playerStats.filter(p => p.match_id === selectedMatchId);
         const matchInfo = allMatches.find(m => m.match_id === selectedMatchId);
 
         if (matchInfo) {
-          setCurrentMatch({
+          const newMatch: ApiTypes.LastMatch = {
             players: matchPlayers.map(p => ({
               match_id: p.match_id,
               kills_total: p.kills_total,
               deaths_total: p.deaths_total,
               dmg: p.dmg,
               utility_dmg: p.utility_dmg,
-              he_dmg: 0,
-              molotov_dmg: 0,
+              he_dmg: p.he_dmg,
+              molotov_dmg: p.molotov_dmg,
               headshot_kills_total: p.headshot_kills_total,
               ace_rounds_total: p.ace_rounds_total,
               quad_rounds_total: p.quad_rounds_total,
@@ -76,17 +94,21 @@ export const LastMatchCard = ({ match: initialMatch }: LastMatchCardProps) => {
               date_time: matchInfo.date_time,
               won: matchInfo.won === 1,
             },
-          });
+          };
+          setCurrentMatch(newMatch);
+          // Cache the fetched match
+          setMatchDataCache(prev => new Map(prev).set(selectedMatchId, newMatch));
         }
       } catch (error) {
         console.error('Failed to fetch match data:', error);
+        setError('Failed to load match details. Please try again.');
       } finally {
         setLoadingMatch(false);
       }
     };
 
     fetchMatchData();
-  }, [selectedMatchId, initialMatch, allMatches]);
+  }, [selectedMatchId, initialMatch, allMatches, matchDataCache]);
 
   const { match_info, players } = currentMatch;
 
@@ -144,7 +166,12 @@ export const LastMatchCard = ({ match: initialMatch }: LastMatchCardProps) => {
         </div>
       </CardHeader>
       {isExpanded && (
-        <CardContent>
+        <CardContent aria-expanded={isExpanded}>
+          {error && (
+            <div className="mb-4 p-3 rounded bg-red-500/10 border border-red-500/20 text-red-500 text-sm">
+              {error}
+            </div>
+          )}
           {loadingMatch ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
