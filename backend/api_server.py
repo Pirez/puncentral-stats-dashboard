@@ -205,84 +205,103 @@ def ensure_database_exists():
     logger.info(f"Volume path: {VOLUME_PATH}")
     logger.info(f"Database path: {DB_PATH}")
 
+    db_exists = os.path.exists(DB_PATH)
+    schema_needs_creation = False
+
     # If database doesn't exist in volume, copy from initial location or create new
-    if not os.path.exists(DB_PATH):
+    if not db_exists:
+        logger.info(f"Database file does not exist at {DB_PATH}")
         initial_db_path = "./player_stats.db"  # Initial DB in deployment
         if os.path.exists(initial_db_path):
             shutil.copy2(initial_db_path, DB_PATH)
             logger.info(f"Copied initial database to persistent volume: {DB_PATH}")
+            return  # Database copied with schema, no need to create tables
         else:
-            # Create empty database with schema
-            logger.info(f"Creating new empty database at {DB_PATH}")
-            conn = sqlite3.connect(DB_PATH)
-            cursor = conn.cursor()
-
-            # Create all required tables
-            cursor.execute("""
-                CREATE TABLE player_stats (
-                    match_id TEXT,
-                    kills_total INTEGER,
-                    deaths_total INTEGER,
-                    dmg INTEGER,
-                    utility_dmg INTEGER,
-                    headshot_kills_total INTEGER,
-                    ace_rounds_total INTEGER,
-                    quad_rounds_total INTEGER,
-                    triple_rounds_total INTEGER,
-                    mvps INTEGER,
-                    name TEXT,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-
-            cursor.execute("""
-                CREATE TABLE map_stats (
-                    match_id TEXT UNIQUE,
-                    map_name TEXT,
-                    date_time DATETIME,
-                    won INT,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-
-            cursor.execute("""
-                CREATE TABLE chicken_kills (
-                    match_id TEXT,
-                    name TEXT,
-                    chicken INT,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-
-            cursor.execute("""
-                CREATE TABLE locations (
-                    match_id TEXT,
-                    name TEXT,
-                    location TEXT,
-                    kills INT,
-                    deaths INT,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-
-            cursor.execute("""
-                CREATE TABLE rank (
-                    match_id TEXT,
-                    num_wins INTEGER,
-                    rank_change REAL,
-                    rank_new INTEGER,
-                    rank_old INTEGER,
-                    rank_type_id INTEGER,
-                    user_name TEXT,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-                )
-            """)
-
-            conn.commit()
-            conn.close()
-            logger.info(f"Successfully created empty database with schema at {DB_PATH}")
+            logger.info(f"No initial database found, will create new database with schema")
+            schema_needs_creation = True
     else:
-        logger.info(f"Database already exists at {DB_PATH}")
+        # Database file exists, check if it has the required tables
+        logger.info(f"Database file exists at {DB_PATH}, checking for tables...")
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='map_stats'")
+        if cursor.fetchone() is None:
+            logger.warning(f"Database exists but map_stats table not found, recreating schema")
+            schema_needs_creation = True
+        else:
+            logger.info(f"Database schema already exists")
+        conn.close()
+
+    if schema_needs_creation:
+        # Create empty database with schema
+        logger.info(f"Creating database schema at {DB_PATH}")
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+
+        # Create all required tables
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS player_stats (
+                match_id TEXT,
+                kills_total INTEGER,
+                deaths_total INTEGER,
+                dmg INTEGER,
+                utility_dmg INTEGER,
+                headshot_kills_total INTEGER,
+                ace_rounds_total INTEGER,
+                quad_rounds_total INTEGER,
+                triple_rounds_total INTEGER,
+                mvps INTEGER,
+                name TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS map_stats (
+                match_id TEXT UNIQUE,
+                map_name TEXT,
+                date_time DATETIME,
+                won INT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS chicken_kills (
+                match_id TEXT,
+                name TEXT,
+                chicken INT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS locations (
+                match_id TEXT,
+                name TEXT,
+                location TEXT,
+                kills INT,
+                deaths INT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS rank (
+                match_id TEXT,
+                num_wins INTEGER,
+                rank_change REAL,
+                rank_new INTEGER,
+                rank_old INTEGER,
+                rank_type_id INTEGER,
+                user_name TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+
+        conn.commit()
+        conn.close()
+        logger.info(f"Successfully created database schema at {DB_PATH}")
 
 
 def get_db():
