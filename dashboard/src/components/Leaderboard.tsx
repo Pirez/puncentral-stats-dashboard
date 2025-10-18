@@ -187,12 +187,12 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
   return (
     <Card className="col-span-full">
       <CardHeader>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col md:flex-row md:justify-between gap-4">
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-6 w-6 text-yellow-500" />
             Player Leaderboard
           </CardTitle>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-2" role="group" aria-label="Sort leaderboard by category">
             <span className="text-sm text-muted-foreground whitespace-nowrap">Sort by:</span>
             <button
               onClick={() => setSortBy('totalPoints')}
@@ -267,7 +267,7 @@ export const Leaderboard = ({ players, multiKills, utilityDamage }: LeaderboardP
               return (
                 <div
                   key={player.name}
-                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors min-w-[700px]"
+                  className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors min-w-[500px] md:min-w-[700px]"
                 >
                   <div className="flex items-center gap-4 flex-shrink-0">
                     <div className="flex items-center justify-center w-8">
