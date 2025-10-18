@@ -20,4 +20,5 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        working-directory: ./dashboard
         run: railway up --service a4429fdb-53df-413f-a383-c20b235e1f5f
