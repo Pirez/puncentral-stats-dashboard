@@ -2,11 +2,31 @@
 
 A modern, full-stack web application for tracking and visualizing Counter-Strike 2 player statistics.
 
-![Dashboard Preview](https://img.shields.io/badge/React-18.3-61DAFB?logo=react)
-![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript)
-![Railway](https://img.shields.io/badge/Deployed%20on-Railway-0B0D0E?logo=railway)
+## 📊 Project Status
+
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/Pirez/puncentral-stats-dashboard/deploy-railway.yml?branch=main&logo=github&label=CI/CD)](https://github.com/Pirez/puncentral-stats-dashboard/actions)
+[![Railway Deployment](https://img.shields.io/badge/Deployed%20on-Railway-0B0D0E?logo=railway)](https://railway.app)
+[![License](https://img.shields.io/badge/License-Private-red.svg)](LICENSE)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/Pirez/puncentral-stats-dashboard/graphs/commit-activity)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+
+## 🛠️ Tech Stack
+
+![React](https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7.1-646CFF?logo=vite&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind-3.4-06B6D4?logo=tailwindcss&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-009688?logo=fastapi&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)
+
+## 📈 Community
+
+[![GitHub Stars](https://img.shields.io/github/stars/Pirez/puncentral-stats-dashboard?style=social)](https://github.com/Pirez/puncentral-stats-dashboard/stargazers)
+[![GitHub Forks](https://img.shields.io/github/forks/Pirez/puncentral-stats-dashboard?style=social)](https://github.com/Pirez/puncentral-stats-dashboard/network/members)
+[![GitHub Issues](https://img.shields.io/github/issues/Pirez/puncentral-stats-dashboard)](https://github.com/Pirez/puncentral-stats-dashboard/issues)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/Pirez/puncentral-stats-dashboard)](https://github.com/Pirez/puncentral-stats-dashboard/pulls)
 
 ## ✨ Features
 
