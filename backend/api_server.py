@@ -163,6 +163,31 @@ class LastMatchInfo(BaseModel):
     won: bool
 
 
+class PlayerStatsUpload(BaseModel):
+    kills_total: int
+    deaths_total: int
+    dmg: int
+    utility_dmg: int
+    headshot_kills_total: int
+    ace_rounds_total: int
+    quad_rounds_total: int
+    triple_rounds_total: int
+    mvps: int
+    name: str
+
+
+class MapStatsUpload(BaseModel):
+    map_name: str
+    date_time: str
+    won: int
+
+
+class MatchUpload(BaseModel):
+    match_id: str
+    player_stats: List[PlayerStatsUpload]
+    map_stats: MapStatsUpload
+
+
 def ensure_database_exists():
     """Ensure database directory exists and copy initial database if needed"""
     import shutil
@@ -194,6 +219,7 @@ async def root(request: Request):
         "message": "CS2 Player Stats API",
         "version": "1.0.0",
         "endpoints": [
+            "/api/upload (POST)",
             "/api/player-stats",
             "/api/map-stats",
             "/api/chicken-kills",
@@ -206,6 +232,83 @@ async def root(request: Request):
             "/api/last-match",
         ],
     }
+
+
+@app.post("/api/upload")
+@limiter.limit("10/minute")
+async def upload_match_data(request: Request, match_data: MatchUpload):
+    """
+    Upload match data to the database.
+    Requires authentication via API token.
+
+    Request body should contain:
+    - match_id: Unique identifier for the match
+    - player_stats: List of player statistics
+    - map_stats: Map information and outcome
+    """
+    try:
+        conn = get_db()
+        cursor = conn.cursor()
+
+        # Check if match already exists
+        cursor.execute(
+            "SELECT COUNT(*) FROM map_stats WHERE match_id = ?",
+            (match_data.match_id,)
+        )
+        if cursor.fetchone()[0] > 0:
+            conn.close()
+            raise HTTPException(
+                status_code=409,
+                detail=f"Match {match_data.match_id} already exists in database"
+            )
+
+        # Insert map stats
+        cursor.execute("""
+            INSERT INTO map_stats (match_id, map_name, date_time, won)
+            VALUES (?, ?, ?, ?)
+        """, (
+            match_data.match_id,
+            match_data.map_stats.map_name,
+            match_data.map_stats.date_time,
+            match_data.map_stats.won
+        ))
+
+        # Insert player stats
+        for player in match_data.player_stats:
+            cursor.execute("""
+                INSERT INTO player_stats (
+                    match_id, kills_total, deaths_total, dmg, utility_dmg,
+                    headshot_kills_total, ace_rounds_total, quad_rounds_total,
+                    triple_rounds_total, mvps, name
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                match_data.match_id,
+                player.kills_total,
+                player.deaths_total,
+                player.dmg,
+                player.utility_dmg,
+                player.headshot_kills_total,
+                player.ace_rounds_total,
+                player.quad_rounds_total,
+                player.triple_rounds_total,
+                player.mvps,
+                player.name
+            ))
+
+        conn.commit()
+        conn.close()
+
+        return {
+            "status": "success",
+            "message": f"Match {match_data.match_id} uploaded successfully",
+            "players_uploaded": len(match_data.player_stats)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error uploading match data: {str(e)}")
 
 
 @app.get("/health")
