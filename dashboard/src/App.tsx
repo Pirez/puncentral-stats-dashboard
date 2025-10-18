@@ -73,7 +73,7 @@ function AppContent() {
       <div style={{ minHeight: '100vh', backgroundColor: '#0f172a', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center' }}>
           <div style={{ border: '4px solid #3b82f6', borderTop: '4px solid transparent', borderRadius: '50%', width: '48px', height: '48px', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }}></div>
-          <p>Loading stats from API...</p>
+          <p></p>
           <p style={{ fontSize: '12px', marginTop: '8px', color: '#94a3b8' }}></p>
         </div>
       </div>
@@ -87,7 +87,7 @@ function AppContent() {
           <h2 style={{ color: '#ef4444', marginBottom: '16px' }}>Error Loading Data</h2>
           <p style={{ marginBottom: '8px' }}>{error}</p>
           <p style={{ fontSize: '14px', color: '#94a3b8', marginBottom: '16px' }}>
-            Make sure the API server is running at: {import.meta.env.VITE_API_URL || 'http://localhost:8000'}
+            Make sure the API server is running.
           </p>
           <button
             onClick={() => window.location.reload()}
