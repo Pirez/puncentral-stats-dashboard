@@ -719,27 +719,36 @@ async def get_last_match():
     try:
         conn = get_db()
         cursor = conn.cursor()
-        
-        # Get player stats from last match
+
+        # Get the match_id of the most recent match by actual play time (date_time)
+        cursor.execute("""
+            SELECT match_id
+            FROM map_stats
+            ORDER BY date_time DESC
+            LIMIT 1
+        """)
+        last_match_result = cursor.fetchone()
+
+        if not last_match_result:
+            conn.close()
+            return {"players": [], "match_info": None}
+
+        last_match_id = last_match_result[0]
+
+        # Get player stats from the last match
         cursor.execute("""
             SELECT ps.*
             FROM player_stats ps
-            JOIN (
-                SELECT name, MAX(created_at) AS max_created
-                FROM player_stats
-                GROUP BY name
-            ) latest
-            ON ps.name = latest.name AND ps.created_at = latest.max_created
-        """)
+            WHERE ps.match_id = ?
+        """, (last_match_id,))
         player_data = cursor.fetchall()
-        
-        # Get map info from last match
+
+        # Get map info from the last match
         cursor.execute("""
             SELECT map_name, date_time, won
             FROM map_stats
-            ORDER BY created_at DESC
-            LIMIT 1
-        """)
+            WHERE match_id = ?
+        """, (last_match_id,))
         map_data = cursor.fetchone()
         
         conn.close()
