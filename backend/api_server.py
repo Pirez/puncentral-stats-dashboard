@@ -453,10 +453,10 @@ async def get_player_stats():
 
 @app.get("/api/map-stats", response_model=List[MapStats])
 async def get_map_stats():
-    """Get all map statistics"""
+    """Get all map statistics, sorted by match time (most recent first)"""
     try:
         conn = get_db()
-        df = pd.read_sql("SELECT * FROM map_stats", conn)
+        df = pd.read_sql("SELECT * FROM map_stats ORDER BY date_time DESC", conn)
         conn.close()
         return df.to_dict("records")
     except Exception as e:
@@ -720,24 +720,25 @@ async def get_last_match():
         conn = get_db()
         cursor = conn.cursor()
         
-        # Get player stats from last match
+        # Get player stats from last match (sorted by actual match time)
         cursor.execute("""
             SELECT ps.*
             FROM player_stats ps
-            JOIN (
-                SELECT name, MAX(created_at) AS max_created
-                FROM player_stats
-                GROUP BY name
-            ) latest
-            ON ps.name = latest.name AND ps.created_at = latest.max_created
+            JOIN map_stats ms ON ps.match_id = ms.match_id
+            WHERE ms.match_id = (
+                SELECT match_id
+                FROM map_stats
+                ORDER BY date_time DESC
+                LIMIT 1
+            )
         """)
         player_data = cursor.fetchall()
         
-        # Get map info from last match
+        # Get map info from last match (sorted by actual match time)
         cursor.execute("""
             SELECT map_name, date_time, won
             FROM map_stats
-            ORDER BY created_at DESC
+            ORDER BY date_time DESC
             LIMIT 1
         """)
         map_data = cursor.fetchone()

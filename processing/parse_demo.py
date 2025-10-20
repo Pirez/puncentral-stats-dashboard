@@ -241,6 +241,7 @@ class DemoStatsParser:
         """Parse map statistics from the demo"""
         try:
             import pandas as pd
+            import re
 
             header = self.parser.parse_header()
             map_name = header.get('map_name', 'unknown')
@@ -298,9 +299,21 @@ class DemoStatsParser:
                     t_wins = len(round_end_df[round_end_df['winner'] == 'T'])
                     won = 1 if ct_wins > t_wins else 0
 
-            # Get match date/time from file modification time
-            mod_time = os.path.getmtime(self.demo_path)
-            date_time = datetime.fromtimestamp(mod_time).strftime('%Y-%m-%d %H:%M:%S')
+            # Extract date/time from filename if it matches the format YYYY_MM_DD_HH_MM.dem
+            filename = Path(self.demo_path).stem
+            date_time = None
+
+            # Try to parse filename format: YYYY_MM_DD_HH_MM
+            match = re.match(r'(\d{4})_(\d{2})_(\d{2})_(\d{2})_(\d{2})', filename)
+            if match:
+                year, month, day, hour, minute = match.groups()
+                date_time = f"{year}-{month}-{day} {hour}:{minute}:00"
+                print(f"Extracted timestamp from filename: {date_time}")
+            else:
+                # Fallback: use file modification time
+                print(f"Warning: Could not parse timestamp from filename '{filename}', using file modification time")
+                mod_time = os.path.getmtime(self.demo_path)
+                date_time = datetime.fromtimestamp(mod_time).strftime('%Y-%m-%d %H:%M:%S')
 
             return {
                 'map_name': map_name,
